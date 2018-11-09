@@ -104,8 +104,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
         this.acc = AccessController.getContext();
     }
 
-    URLClassLoader(URL[] urls, ClassLoader parent,
-                   AccessControlContext acc) {
+    URLClassLoader(URL[] urls, ClassLoader parent,AccessControlContext acc) {
         super(parent);
         // this is to make the stack depth consistent with 1.1
         SecurityManager security = System.getSecurityManager();
@@ -178,8 +177,8 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      *             creation of a class loader.
      * @see SecurityManager#checkCreateClassLoader
      */
-    public URLClassLoader(URL[] urls, ClassLoader parent,
-                          URLStreamHandlerFactory factory) {
+    public URLClassLoader(URL[] urls, ClassLoader parent,URLStreamHandlerFactory factory) {
+        //调用父类SecureClassLoader的构造器
         super(parent);
         // this is to make the stack depth consistent with 1.1
         SecurityManager security = System.getSecurityManager();
@@ -204,8 +203,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      * we have to keep a weak reference to each stream.
      */
 
-    private WeakHashMap<Closeable,Void>
-        closeables = new WeakHashMap<>();
+    private WeakHashMap<Closeable,Void> closeables = new WeakHashMap<>();
 
     /**
      * Returns an input stream for reading the specified resource.
@@ -347,8 +345,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      * @exception ClassNotFoundException if the class could not be found,
      *            or if the loader is closed.
      */
-    protected Class<?> findClass(final String name)
-         throws ClassNotFoundException
+    protected Class<?> findClass(final String name)throws ClassNotFoundException
     {
         try {
             return AccessController.doPrivileged(
@@ -377,8 +374,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      * If non-null, verify the package using the specified code
      * source and manifest.
      */
-    private Package getAndVerifyPackage(String pkgname,
-                                        Manifest man, URL url) {
+    private Package getAndVerifyPackage(String pkgname,Manifest man, URL url) {
         Package pkg = getPackage(pkgname);
         if (pkg != null) {
             // Package found, so check package sealing.
@@ -465,8 +461,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      *              of its ancestors
      * @return the newly defined Package object
      */
-    protected Package definePackage(String name, Manifest man, URL url)
-        throws IllegalArgumentException
+    protected Package definePackage(String name, Manifest man, URL url)throws IllegalArgumentException
     {
         String path = name.replace('.', '/').concat("/");
         String specTitle = null, specVersion = null, specVendor = null;
@@ -564,8 +559,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      * @return an <code>Enumeration</code> of <code>URL</code>s
      *         If the loader is closed, the Enumeration will be empty.
      */
-    public Enumeration<URL> findResources(final String name)
-        throws IOException
+    public Enumeration<URL> findResources(final String name)throws IOException
     {
         final Enumeration<URL> e = ucp.findResources(name, true);
 
@@ -709,8 +703,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      * @param parent the parent class loader for delegation
      * @return the resulting class loader
      */
-    public static URLClassLoader newInstance(final URL[] urls,
-                                             final ClassLoader parent) {
+    public static URLClassLoader newInstance(final URL[] urls,final ClassLoader parent) {
         // Save the caller's context
         final AccessControlContext acc = AccessController.getContext();
         // Need a privileged block to create the class loader

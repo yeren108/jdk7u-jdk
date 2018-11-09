@@ -84,6 +84,7 @@ public class URLClassPath {
     HashMap<String, Loader> lmap = new HashMap<String, Loader>();
 
     /* The jar protocol handler to use when creating new URLs */
+    /* 创建新URL时使用的JAR协议处理程序 */
     private URLStreamHandler jarHandler;
 
     /* Whether this URLClassLoader has been closed yet */
@@ -103,7 +104,7 @@ public class URLClassPath {
         for (int i = 0; i < urls.length; i++) {
             path.add(urls[i]);
         }
-        push(urls);
+        push(urls);//将这几个url放到栈中，这个栈中都是没有打开的url
         if (factory != null) {
             jarHandler = factory.createURLStreamHandler("jar");
         }

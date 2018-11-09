@@ -55,8 +55,18 @@ Launcher */
 public class Launcher {
     private static URLStreamHandlerFactory factory = new Factory();
     private static Launcher launcher = new Launcher();
-    private static String bootClassPath =
-        System.getProperty("sun.boot.class.path");
+    /**
+     * sun.boot.class.path的路径包括一下几个：
+     * /usr/local/java/jdk1.8.0_181/jre/lib/resources.jar
+     * /usr/local/java/jdk1.8.0_181/jre/lib/rt.jar
+     * /usr/local/java/jdk1.8.0_181/jre/lib/sunrsasign.jar
+     * /usr/local/java/jdk1.8.0_181/jre/lib/jsse.jar
+     * /usr/local/java/jdk1.8.0_181/jre/lib/jce.jar
+     * /usr/local/java/jdk1.8.0_181/jre/lib/charsets.jar
+     * /usr/local/java/jdk1.8.0_181/jre/lib/jfr.jar
+     * /usr/local/java/jdk1.8.0_181/jre/classes
+     */
+    private static String bootClassPath =System.getProperty("sun.boot.class.path");
 
     public static Launcher getLauncher() {
         return launcher;
@@ -68,21 +78,24 @@ public class Launcher {
         // Create the extension class loader
         ClassLoader extcl;
         try {
+            // 创建一个扩展的classLoader
+            // 加载路径：java.ext.dirs  （/usr/local/java/jdk1.8.0_181/jre/lib/ext,/usr/java/packages/lib/ext等）
             extcl = ExtClassLoader.getExtClassLoader();
         } catch (IOException e) {
-            throw new InternalError(
-                "Could not create extension class loader");
+            throw new InternalError("Could not create extension class loader");
         }
 
         // Now create the class loader to use to launch the application
         try {
+            // 创建一个AppClassLoader
+            // 加载路径：java.class.path
             loader = AppClassLoader.getAppClassLoader(extcl);
         } catch (IOException e) {
-            throw new InternalError(
-                "Could not create application class loader");
+            throw new InternalError("Could not create application class loader");
         }
 
         // Also set the context class loader for the primordial thread.
+        // 设置AppClassLoader为线程上下文类加载器
         Thread.currentThread().setContextClassLoader(loader);
 
         // Finally, install a security manager if requested
@@ -129,8 +142,8 @@ public class Launcher {
          * create an ExtClassLoader. The ExtClassLoader is created
          * within a context that limits which files it can read
          */
-        public static ExtClassLoader getExtClassLoader() throws IOException
-        {
+        public static ExtClassLoader getExtClassLoader() throws IOException {
+            //dirs=java.ext.dirs,其实就是/usr/local/java/jdk1.8.0_181/jre/lib/ext,/usr/java/packages/lib/ext等
             final File[] dirs = getExtDirs();
 
             try {
@@ -142,9 +155,11 @@ public class Launcher {
                     new PrivilegedExceptionAction<ExtClassLoader>() {
                         public ExtClassLoader run() throws IOException {
                             int len = dirs.length;
+                            //将dirs这个几个路径的内容注册到MetaIndex这个map中
                             for (int i = 0; i < len; i++) {
                                 MetaIndex.registerDirectory(dirs[i]);
                             }
+                            //根据这几个路径新建一个扩展类型的classsLoader
                             return new ExtClassLoader(dirs);
                         }
                     });
@@ -161,6 +176,7 @@ public class Launcher {
          * Creates a new ExtClassLoader for the specified directories.
          */
         public ExtClassLoader(File[] dirs) throws IOException {
+            //调用URLClassLoader的构造器，可以看到它并没有父classLoader
             super(getExtURLs(dirs), null, factory);
         }
 
@@ -262,9 +278,7 @@ public class Launcher {
             ClassLoader.registerAsParallelCapable();
         }
 
-        public static ClassLoader getAppClassLoader(final ClassLoader extcl)
-            throws IOException
-        {
+        public static ClassLoader getAppClassLoader(final ClassLoader extcl) throws IOException {
             final String s = System.getProperty("java.class.path");
             final File[] path = (s == null) ? new File[0] : getClassPath(s);
 
@@ -278,8 +292,7 @@ public class Launcher {
             return AccessController.doPrivileged(
                 new PrivilegedAction<AppClassLoader>() {
                     public AppClassLoader run() {
-                    URL[] urls =
-                        (s == null) ? new URL[0] : pathToURLs(path);
+                    URL[] urls =(s == null) ? new URL[0] : pathToURLs(path);
                     return new AppClassLoader(urls, extcl);
                 }
             });
@@ -295,9 +308,7 @@ public class Launcher {
         /**
          * Override loadClass so we can checkPackageAccess.
          */
-        public Class loadClass(String name, boolean resolve)
-            throws ClassNotFoundException
-        {
+        public Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
             int i = name.lastIndexOf('.');
             if (i != -1) {
                 SecurityManager sm = System.getSecurityManager();
@@ -322,7 +333,7 @@ public class Launcher {
          * This class loader supports dynamic additions to the class path
          * at runtime.
          *
-         * @see java.lang.instrument.Instrumentation#appendToSystemClassPathSearch
+         * @see java.lang.instrument.Instrumentation-appendToSystemClassPathSearch
          */
         private void appendToClassPathForInstrumentation(String path) {
             assert(Thread.holdsLock(this));
@@ -389,6 +400,8 @@ public class Launcher {
         }
     }
 
+
+    //BootstrapClassLoader加载路径：java.ext.dirs
     public static URLClassPath getBootstrapClassPath() {
         return BootClassPathHolder.bcp;
     }
@@ -466,6 +479,7 @@ public class Launcher {
 
     /*
      * The stream handler factory for loading system protocol handlers.
+     * 用于加载系统协议处理程序的流处理程序工厂
      */
     private static class Factory implements URLStreamHandlerFactory {
         private static String PREFIX = "sun.net.www.protocol";

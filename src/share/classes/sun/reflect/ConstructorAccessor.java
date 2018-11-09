@@ -34,8 +34,5 @@ import java.lang.reflect.InvocationTargetException;
 
 public interface ConstructorAccessor {
     /** Matches specification in {@link java.lang.reflect.Constructor} */
-    public Object newInstance(Object[] args)
-        throws InstantiationException,
-               IllegalArgumentException,
-               InvocationTargetException;
+    public Object newInstance(Object[] args)throws InstantiationException,IllegalArgumentException,InvocationTargetException;
 }

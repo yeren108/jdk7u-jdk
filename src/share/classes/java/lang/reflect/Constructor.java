@@ -505,10 +505,7 @@ public final
      * @exception ExceptionInInitializerError if the initialization provoked
      *              by this method fails.
      */
-    public T newInstance(Object ... initargs)
-        throws InstantiationException, IllegalAccessException,
-               IllegalArgumentException, InvocationTargetException
-    {
+    public T newInstance(Object ... initargs) throws InstantiationException, IllegalAccessException,IllegalArgumentException, InvocationTargetException {
         if (!override) {
             if (!Reflection.quickCheckMemberAccess(clazz, modifiers)) {
                 Class<?> caller = Reflection.getCallerClass(2);

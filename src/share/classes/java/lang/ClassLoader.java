@@ -280,8 +280,7 @@ public abstract class ClassLoader {
         if (ParallelLoaders.isRegistered(this.getClass())) {
             parallelLockMap = new ConcurrentHashMap<>();
             package2certs = new ConcurrentHashMap<>();
-            domains =
-                Collections.synchronizedSet(new HashSet<ProtectionDomain>());
+            domains =Collections.synchronizedSet(new HashSet<ProtectionDomain>());
             assertionLock = new Object();
         } else {
             // no finer-grained lock; lock on the classloader instance
@@ -397,18 +396,23 @@ public abstract class ClassLoader {
      * @throws  ClassNotFoundException
      *          If the class could not be found
      */
-    protected Class<?> loadClass(String name, boolean resolve)
-        throws ClassNotFoundException
-    {
+    //通过二进制名字load类，这个方法搜索类的默认实现的是以下顺序：
+    // 1,调用findLoadedClass(String)来检查这个class是否已经加载了这个类
+    // 2,用父类的classLoeder去调用loadClass方法，如果父classLoad为NULL，则使用内置于虚拟机的类加载器，去加载class
+    // 3,如果向上委托父加载器没有加载成功，则通过findClass(String)查找。
+    protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         synchronized (getClassLoadingLock(name)) {
             // First, check if the class has already been loaded
+            //1111111111
             Class c = findLoadedClass(name);
             if (c == null) {
                 long t0 = System.nanoTime();
                 try {
                     if (parent != null) {
+                        //2222222222
                         c = parent.loadClass(name, false);
                     } else {
+                        //3333333333
                         c = findBootstrapClassOrNull(name);
                     }
                 } catch (ClassNotFoundException e) {
@@ -420,6 +424,10 @@ public abstract class ClassLoader {
                     // If still not found, then invoke findClass in order
                     // to find the class.
                     long t1 = System.nanoTime();
+                    // 要注意的是如果要编写一个classLoader的子类，也就是自定义一个classloader,首先编写一个类继承自ClassLoader抽象类。
+                    // 然后复写它的findClass()方法。（建议覆盖findClass()方法，而不要直接改写loadClass()方法。）
+                    // 在findClass()方法中调用defineClass()。
+                    // 它能将class二进制内容转换成Class对象，如果不符合要求的会抛出各种异常
                     c = findClass(name);
 
                     // this is the defining class loader; record the stats
@@ -429,6 +437,7 @@ public abstract class ClassLoader {
                 }
             }
             if (resolve) {
+                //链接这个类
                 resolveClass(c);
             }
             return c;
@@ -563,10 +572,9 @@ public abstract class ClassLoader {
      * @deprecated  Replaced by {@link #defineClass(String, byte[], int, int)
      * defineClass(String, byte[], int, int)}
      */
+    //它能将class二进制内容转换成Class对象，如果不符合要求的会抛出各种异常
     @Deprecated
-    protected final Class<?> defineClass(byte[] b, int off, int len)
-        throws ClassFormatError
-    {
+    protected final Class<?> defineClass(byte[] b, int off, int len) throws ClassFormatError {
         return defineClass(null, b, off, len, null);
     }
 
@@ -628,9 +636,8 @@ public abstract class ClassLoader {
      *
      * @since  1.1
      */
-    protected final Class<?> defineClass(String name, byte[] b, int off, int len)
-        throws ClassFormatError
-    {
+    //它能将class二进制内容转换成Class对象，如果不符合要求的会抛出各种异常
+    protected final Class<?> defineClass(String name, byte[] b, int off, int len) throws ClassFormatError {
         return defineClass(name, b, off, len, null);
     }
 
@@ -778,10 +785,8 @@ public abstract class ClassLoader {
      *          certificates than this class, or if <tt>name</tt> begins with
      *          "<tt>java.</tt>".
      */
-    protected final Class<?> defineClass(String name, byte[] b, int off, int len,
-                                         ProtectionDomain protectionDomain)
-        throws ClassFormatError
-    {
+    //它能将class二进制内容转换成Class对象，如果不符合要求的会抛出各种异常
+    protected final Class<?> defineClass(String name, byte[] b, int off, int len,ProtectionDomain protectionDomain) throws ClassFormatError{
         protectionDomain = preDefineClass(name, protectionDomain);
 
         Class c = null;
@@ -860,10 +865,8 @@ public abstract class ClassLoader {
      *
      * @since  1.5
      */
-    protected final Class<?> defineClass(String name, java.nio.ByteBuffer b,
-                                         ProtectionDomain protectionDomain)
-        throws ClassFormatError
-    {
+    //它能将class二进制内容转换成Class对象，如果不符合要求的会抛出各种异常
+    protected final Class<?> defineClass(String name, java.nio.ByteBuffer b,ProtectionDomain protectionDomain) throws ClassFormatError {
         int len = b.remaining();
 
         // Use byte[] if not a direct ByteBufer:
@@ -1006,6 +1009,8 @@ public abstract class ClassLoader {
      *
      * @see  #defineClass(String, byte[], int, int)
      */
+    // 链接指定的类，这个（误导性命名）方法可以被类加载器用来链接一个类。
+    // 如果类已经链接，那么这个方法简单地返回。否则，类就像Java语言规范的“执行”章节中描述的那样链接。
     protected final void resolveClass(Class<?> c) {
         resolveClass0(c);
     }
@@ -1464,6 +1469,7 @@ public abstract class ClassLoader {
      *
      * @revised  1.4
      */
+    //获取系统classLoader
     public static ClassLoader getSystemClassLoader() {
         initSystemClassLoader();
         if (scl == null) {
@@ -1479,6 +1485,9 @@ public abstract class ClassLoader {
         return scl;
     }
 
+    /**
+     * 初始化系统classLoader
+     */
     private static synchronized void initSystemClassLoader() {
         if (!sclSet) {
             if (scl != null)
@@ -1488,8 +1497,8 @@ public abstract class ClassLoader {
                 Throwable oops = null;
                 scl = l.getClassLoader();
                 try {
-                    scl = AccessController.doPrivileged(
-                        new SystemClassLoaderAction(scl));
+                    //
+                    scl = AccessController.doPrivileged(new SystemClassLoaderAction(scl));
                 } catch (PrivilegedActionException pae) {
                     oops = pae.getCause();
                     if (oops instanceof InvocationTargetException) {
@@ -2191,11 +2200,10 @@ public abstract class ClassLoader {
 }
 
 
-class SystemClassLoaderAction
-    implements PrivilegedExceptionAction<ClassLoader> {
+class SystemClassLoaderAction implements PrivilegedExceptionAction<ClassLoader> {
     private ClassLoader parent;
 
-    SystemClassLoaderAction(ClassLoader parent) {
+    SystemClassLoaderAction(CloadClass(String namelassLoader parent) {
         this.parent = parent;
     }
 
@@ -2205,10 +2213,8 @@ class SystemClassLoaderAction
             return parent;
         }
 
-        Constructor ctor = Class.forName(cls, true, parent)
-            .getDeclaredConstructor(new Class[] { ClassLoader.class });
-        ClassLoader sys = (ClassLoader) ctor.newInstance(
-            new Object[] { parent });
+        Constructor ctor = Class.forName(cls, true, parent).getDeclaredConstructor(new Class[] { ClassLoader.class });
+        ClassLoader sys = (ClassLoader) ctor.newInstance(new Object[] { parent });
         Thread.currentThread().setContextClassLoader(sys);
         return sys;
     }
