@@ -242,6 +242,7 @@ public class Proxy implements java.io.Serializable {
     private static Object nextUniqueNumberLock = new Object();
 
     /** set of all generated proxy classes, for isProxyClass implementation */
+    //所有生成的代理类的集合，代理类的实现
     private static Map<Class<?>, Void> proxyClasses =
         Collections.synchronizedMap(new WeakHashMap<Class<?>, Void>());
 
@@ -342,10 +343,7 @@ public class Proxy implements java.io.Serializable {
      * @throws  NullPointerException if the {@code interfaces} array
      *          argument or any of its elements are {@code null}
      */
-    public static Class<?> getProxyClass(ClassLoader loader,
-                                         Class<?>... interfaces)
-        throws IllegalArgumentException
-    {
+    public static Class<?> getProxyClass(ClassLoader loader,Class<?>... interfaces) throws IllegalArgumentException {
         if (interfaces.length > 65535) {
             throw new IllegalArgumentException("interface limit exceeded");
         }

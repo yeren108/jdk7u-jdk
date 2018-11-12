@@ -60,9 +60,7 @@ public class AnnotationParser {
      *         malformed.
      */
     public static Map<Class<? extends Annotation>, Annotation> parseAnnotations(
-                byte[] rawAnnotations,
-                ConstantPool constPool,
-                Class<?> container) {
+                byte[] rawAnnotations,ConstantPool constPool,Class<?> container) {
         if (rawAnnotations == null)
             return Collections.emptyMap();
 
@@ -77,11 +75,8 @@ public class AnnotationParser {
     }
 
     private static Map<Class<? extends Annotation>, Annotation> parseAnnotations2(
-                byte[] rawAnnotations,
-                ConstantPool constPool,
-                Class<?> container) {
-        Map<Class<? extends Annotation>, Annotation> result =
-            new LinkedHashMap<Class<? extends Annotation>, Annotation>();
+                byte[] rawAnnotations,ConstantPool constPool,Class<?> container) {
+        Map<Class<? extends Annotation>, Annotation> result = new LinkedHashMap<Class<? extends Annotation>, Annotation>();
         ByteBuffer buf = ByteBuffer.wrap(rawAnnotations);
         int numAnnotations = buf.getShort() & 0xFFFF;
         for (int i = 0; i < numAnnotations; i++) {
@@ -91,8 +86,7 @@ public class AnnotationParser {
                 AnnotationType type = AnnotationType.getInstance(klass);
                 if (type.retention() == RetentionPolicy.RUNTIME)
                     if (result.put(klass, a) != null)
-                        throw new AnnotationFormatError(
-                            "Duplicate annotation for class: "+klass+": " + a);
+                        throw new AnnotationFormatError("Duplicate annotation for class: "+klass+": " + a);
             }
         }
         return result;

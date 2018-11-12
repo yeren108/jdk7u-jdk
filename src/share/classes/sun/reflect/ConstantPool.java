@@ -30,20 +30,24 @@ import java.lang.reflect.*;
 /** Provides reflective access to the constant pools of classes.
     Currently this is needed to provide reflective access to annotations
     but may be used by other internal subsystems in the future. */
+//提供对类常量池的反射访问。目前，这需要提供对注释的反射访问。但将来可能会被其他内部子系统使用。
 
 public class ConstantPool {
   // Number of entries in this constant pool (= maximum valid constant pool index)
+  // 此常量池中的条目数（=最大有效常数池索引）
   public int      getSize()                      { return getSize0            (constantPoolOop);        }
   public Class    getClassAt         (int index) { return getClassAt0         (constantPoolOop, index); }
   public Class    getClassAtIfLoaded (int index) { return getClassAtIfLoaded0 (constantPoolOop, index); }
-  // Returns either a Method or Constructor.
-  // Static initializers are returned as Method objects.
+
+  // Returns either a Method or Constructor.Static initializers are returned as Method objects.
+  // 返回方法或构造函数。静态初始化器作为方法对象返回。
   public Member   getMethodAt        (int index) { return getMethodAt0        (constantPoolOop, index); }
   public Member   getMethodAtIfLoaded(int index) { return getMethodAtIfLoaded0(constantPoolOop, index); }
   public Field    getFieldAt         (int index) { return getFieldAt0         (constantPoolOop, index); }
   public Field    getFieldAtIfLoaded (int index) { return getFieldAtIfLoaded0 (constantPoolOop, index); }
-  // Fetches the class name, member (field, method or interface
-  // method) name, and type descriptor as an array of three Strings
+
+  // Fetches the class name, member (field, method or interface method) name, and type descriptor as an array of three Strings
+  // 获取类名、成员（字段、方法或接口方法）名称，并将类型描述符作为三个字符串的数组。
   public String[] getMemberRefInfoAt (int index) { return getMemberRefInfoAt0 (constantPoolOop, index); }
   public int      getIntAt           (int index) { return getIntAt0           (constantPoolOop, index); }
   public long     getLongAt          (int index) { return getLongAt0          (constantPoolOop, index); }
@@ -61,6 +65,7 @@ public class ConstantPool {
   }
 
   // HotSpot-internal constant pool object (set by the VM, name known to the VM)
+  // 热点内部常数池对象（由VM设置，VM已知的名称）
   private Object constantPoolOop;
 
   private native int      getSize0            (Object constantPoolOop);
